@@ -55,6 +55,25 @@ func (r *AccountRepository) GetByID(ctx context.Context, accountID int64) (model
 	return account, nil
 }
 
+// Add a new method for transactional account fetch with locking
+func (r *AccountRepository) GetByIDForUpdate(ctx context.Context, tx *sql.Tx, accountID int64) (models.Account, error) {
+    query := `SELECT account_id, balance FROM accounts WHERE account_id = $1 FOR UPDATE`
+    var account models.Account
+    var balanceStr string
+    err := tx.QueryRowContext(ctx, query, accountID).Scan(&account.AccountID, &balanceStr)
+    if err != nil {
+        if err == sql.ErrNoRows {
+            return models.Account{}, ErrAccountNotFound
+        }
+        return models.Account{}, err
+    }
+    account.Balance, err = decimal.NewFromString(balanceStr)
+    if err != nil {
+        return models.Account{}, err
+    }
+    return account, nil
+}
+
 // UpdateBalance updates an account's balance within a transaction
 func (r *AccountRepository) UpdateBalance(ctx context.Context, tx *sql.Tx, accountID int64, newBalance decimal.Decimal) error {
 	query := `UPDATE accounts SET balance = $1 WHERE account_id = $2`

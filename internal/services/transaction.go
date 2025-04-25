@@ -66,13 +66,13 @@ func (s *TransactionService) CreateTransaction(ctx context.Context, req models.T
 	}()
 
 	// Get source account (with locking to prevent race conditions)
-	sourceAccount, err := s.accountRepo.GetByID(ctx, req.SourceAccountID)
+	sourceAccount, err := s.accountRepo.GetByIDForUpdate(ctx, tx, req.SourceAccountID)
 	if err != nil {
 		return err
 	}
 
-	// Get destination account
-	destAccount, err := s.accountRepo.GetByID(ctx, req.DestinationAccountID)
+	// Get destination account (with locking)
+	destAccount, err := s.accountRepo.GetByIDForUpdate(ctx, tx, req.DestinationAccountID)
 	if err != nil {
 		return err
 	}
