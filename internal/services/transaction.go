@@ -16,14 +16,12 @@ var (
 	ErrSameSourceAndDest   = errors.New("source and destination accounts must be different")
 )
 
-// TransactionService handles business logic for transactions
 type TransactionService struct {
 	db              *sql.DB
 	accountRepo     *repository.AccountRepository
 	transactionRepo *repository.TransactionRepository
 }
 
-// NewTransactionService creates a new transaction service
 func NewTransactionService(
 	db *sql.DB,
 	accountRepo *repository.AccountRepository,
@@ -36,9 +34,7 @@ func NewTransactionService(
 	}
 }
 
-// CreateTransaction processes a transfer between accounts
 func (s *TransactionService) CreateTransaction(ctx context.Context, req models.TransactionRequest) error {
-	// Validate request
 	if req.SourceAccountID == req.DestinationAccountID {
 		return ErrSameSourceAndDest
 	}
@@ -52,51 +48,43 @@ func (s *TransactionService) CreateTransaction(ctx context.Context, req models.T
 		return ErrInvalidAmount
 	}
 
-	// Start database transaction
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 
-	// Defer rollback in case of error
 	defer func() {
 		if err != nil {
 			_ = tx.Rollback()
 		}
 	}()
 
-	// Get source account (with locking to prevent race conditions)
 	sourceAccount, err := s.accountRepo.GetByIDForUpdate(ctx, tx, req.SourceAccountID)
 	if err != nil {
 		return err
 	}
 
-	// Get destination account (with locking)
 	destAccount, err := s.accountRepo.GetByIDForUpdate(ctx, tx, req.DestinationAccountID)
 	if err != nil {
 		return err
 	}
 
-	// Check if source has enough balance
 	if sourceAccount.Balance.LessThan(amount) {
 		return ErrInsufficientBalance
 	}
 
-	// Update source account balance
 	newSourceBalance := sourceAccount.Balance.Sub(amount)
 	err = s.accountRepo.UpdateBalance(ctx, tx, req.SourceAccountID, newSourceBalance)
 	if err != nil {
 		return err
 	}
 
-	// Update destination account balance
 	newDestBalance := destAccount.Balance.Add(amount)
 	err = s.accountRepo.UpdateBalance(ctx, tx, req.DestinationAccountID, newDestBalance)
 	if err != nil {
 		return err
 	}
 
-	// Record transaction
 	transaction := models.Transaction{
 		SourceAccountID:      req.SourceAccountID,
 		DestinationAccountID: req.DestinationAccountID,
@@ -108,6 +96,5 @@ func (s *TransactionService) CreateTransaction(ctx context.Context, req models.T
 		return err
 	}
 
-	// Commit transaction
 	return tx.Commit()
 }

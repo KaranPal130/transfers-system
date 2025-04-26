@@ -13,26 +13,22 @@ var (
 	ErrAccountNotFound = errors.New("Account not Found")
 )
 
-// AccountRepository handles database operations for accounts
 type AccountRepository struct {
 	db *sql.DB
 }
 
-// NewAccountRepository creates a new account respository
 func NewAccountRepository(db *sql.DB) *AccountRepository {
 	return &AccountRepository{
 		db: db,
 	}
 }
 
-// Create add a new accoutn to the database
 func (r *AccountRepository) Create(ctx context.Context, account models.Account) error {
 	query := `INSERT INTO accounts (account_id, balance) VALUES ($1, $2)`
 	_, err := r.db.ExecContext(ctx, query, account.AccountID, account.Balance)
 	return err
 }
 
-// GetByID retrieves an account by its ID
 func (r *AccountRepository) GetByID(ctx context.Context, accountID int64) (models.Account, error) {
 	query := `SELECT account_id, balance FROM accounts WHERE account_id = $1`
 
@@ -55,7 +51,6 @@ func (r *AccountRepository) GetByID(ctx context.Context, accountID int64) (model
 	return account, nil
 }
 
-// Add a new method for transactional account fetch with locking
 func (r *AccountRepository) GetByIDForUpdate(ctx context.Context, tx *sql.Tx, accountID int64) (models.Account, error) {
     query := `SELECT account_id, balance FROM accounts WHERE account_id = $1 FOR UPDATE`
     var account models.Account
@@ -74,7 +69,6 @@ func (r *AccountRepository) GetByIDForUpdate(ctx context.Context, tx *sql.Tx, ac
     return account, nil
 }
 
-// UpdateBalance updates an account's balance within a transaction
 func (r *AccountRepository) UpdateBalance(ctx context.Context, tx *sql.Tx, accountID int64, newBalance decimal.Decimal) error {
 	query := `UPDATE accounts SET balance = $1 WHERE account_id = $2`
 	result, err := tx.ExecContext(ctx, query, newBalance.String(), accountID)

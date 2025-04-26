@@ -11,13 +11,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Handler contains services for handling API requests
 type Handler struct {
 	accountService     *service.AccountService
 	transactionService *service.TransactionService
 }
 
-// NewHandler creates a new API handler
 func NewHandler(accountService *service.AccountService, transactionService *service.TransactionService) *Handler {
 	return &Handler{
 		accountService:     accountService,
@@ -45,7 +43,6 @@ func (h *Handler) CreateAccount(c *gin.Context) {
 		return
 	}
 
-	// Create account
 	err := h.accountService.CreateAccount(c.Request.Context(), req)
 	if err != nil {
 		switch {
@@ -59,7 +56,6 @@ func (h *Handler) CreateAccount(c *gin.Context) {
 		return
 	}
 
-	// Fetch the created account and return it
 	account, err := h.accountService.GetAccount(c.Request.Context(), req.AccountID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch created account"})

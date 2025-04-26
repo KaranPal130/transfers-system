@@ -1,6 +1,6 @@
-# Transfers System – Triple-A Assessment
+# Transfers System
 
-This project is an internal transfers system built in Go, designed as part of the Triple-A assessment. It provides a RESTful API for account management and money transfers, backed by a PostgreSQL database. The system is production-ready, well-documented, and includes interactive Swagger API docs.
+This project is an internal transfers system built in Go, designed as part of the assessment. It provides a RESTful API for account management and money transfers, backed by a PostgreSQL database. The system is production-ready, well-documented, and includes interactive Swagger API docs.
 
 ## Features
 - **Account Creation**: Create new accounts with an initial balance.
@@ -82,7 +82,7 @@ scripts/schema.sql     # Database schema
 .env                   # Environment variables
 ```
 
-## Notes for Triple-A Assessment
+## Notes
 - The project is modular, testable, and follows Go best practices.
 - API documentation is always up-to-date with code annotations.
 - Error messages are clear and user-friendly.

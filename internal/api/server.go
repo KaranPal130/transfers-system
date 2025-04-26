@@ -20,17 +20,13 @@ func NewServer(handler *Handler) *Server {
 	}
 
 	server.setupRoutes()
-	// Swagger endpoint
 	server.router.GET("/swagger/*any", ginSwagger.WrapHandler(ginSwaggerFiles.Handler))
 	return server
 }
 
 func (s *Server) setupRoutes() {
-	// Account endpoints
 	s.router.POST("/accounts", s.handler.CreateAccount)
 	s.router.GET("/accounts/:account_id", s.handler.GetAccount)
-
-	// Transaction endpoint
 	s.router.POST("/transactions", s.handler.CreateTransaction)
 }
 
