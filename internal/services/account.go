@@ -14,21 +14,17 @@ var (
 	ErrAccountAlreadyExists  = errors.New("account already exists")
 )
 
-// AccountService handles business logic for accounts
 type AccountService struct {
 	accountRepo *repository.AccountRepository
 }
 
-// NewAccountService creates a new account service
 func NewAccountService(accountRepo *repository.AccountRepository) *AccountService {
 	return &AccountService{
 		accountRepo: accountRepo,
 	}
 }
 
-// CreateAccount creates a new account with initial balance
 func (s *AccountService) CreateAccount(ctx context.Context, req models.AccountCreateRequest) error {
-	// Validate initial balance
 	initialBalance, err := decimal.NewFromString(req.InitialBalance)
 	if err != nil {
 		return ErrInvalidInitialBalance
@@ -38,7 +34,6 @@ func (s *AccountService) CreateAccount(ctx context.Context, req models.AccountCr
 		return ErrInvalidInitialBalance
 	}
 
-	// Check if account already exists
 	_, err = s.accountRepo.GetByID(ctx, req.AccountID)
 	if err == nil {
 		return ErrAccountAlreadyExists
@@ -46,7 +41,6 @@ func (s *AccountService) CreateAccount(ctx context.Context, req models.AccountCr
 		return err
 	}
 
-	// Create account
 	account := models.Account{
 		AccountID: req.AccountID,
 		Balance:   initialBalance,
@@ -55,7 +49,6 @@ func (s *AccountService) CreateAccount(ctx context.Context, req models.AccountCr
 	return s.accountRepo.Create(ctx, account)
 }
 
-// GetAccount retrieves account information
 func (s *AccountService) GetAccount(ctx context.Context, accountID int64) (models.Account, error) {
 	return s.accountRepo.GetByID(ctx, accountID)
 }
